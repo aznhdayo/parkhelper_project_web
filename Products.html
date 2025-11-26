@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Products</title>
+</head>
+<body>
+  <h2>Product List</h2>
+  <ul id="productList"></ul>
+
+  <!-- Logout link -->
+  <p><a href="login.html" onclick="logout()">Logout</a></p>
+
+  <!-- Parse SDK -->
+  <script src="https://npmcdn.com/parse/dist/parse.min.js"></script>
+  <script>
+    // Initialize Parse
+    Parse.initialize("MByA9oZ6zGJLwPhpr9DeuTttbxZghCh00njZKpBI", "0LE8X9bYVh3qqdFEvCMfbef358Yd3RFyXaAHNnsq");
+    Parse.serverURL = "https://parseapi.back4app.com/";
+
+    // Check if user is logged in
+    const currentUser = Parse.User.current();
+    if (!currentUser) {
+      alert("You must log in first!");
+      window.location.href = "login.html";
+    } else {
+      showProducts();
+    }
+
+    // Fetch products
+    async function showProducts() {
+      const Product = Parse.Object.extend("_Product");
+      const query = new Parse.Query(Product);
+      const results = await query.find();
+
+      const productList = document.getElementById("productList");
+      productList.innerHTML = "";
+
+      results.forEach(product => {
+        const name = product.get("Product_Name"); // adjust to your actual column name
+        const price = product.get("Price");       // adjust to your actual column name
+        const li = document.createElement("li");
+        li.textContent = name + " - $" + price;
+        productList.appendChild(li);
+      });
+    }
+
+    // Logout function
+    async function logout() {
+      await Parse.User.logOut();
+      alert("You have logged out.");
+    }
+  </script>
+</body>
+</html>

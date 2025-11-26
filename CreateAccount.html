@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Create Account</title>
+</head>
+<body>
+  <h2>Create Account</h2>
+  <form id="signupForm">
+    <input type="text" id="NewUsername" placeholder="New Username" required><br>
+    <input type="password" id="NewPassword" placeholder="New Password" required><br>
+    <input type="email" id="NewEmail" placeholder="Email (optional)"><br>
+    <button type="submit">Sign Up</button>
+  </form>
+
+  <!-- Link back to Login page -->
+  <p>Already have an account? <a href="login.html">Login here</a></p>
+
+  <!-- Parse SDK -->
+  <script src="https://npmcdn.com/parse/dist/parse.min.js"></script>
+  <script>
+    Parse.initialize("MByA9oZ6zGJLwPhpr9DeuTttbxZghCh00njZKpBI", "0LE8X9bYVh3qqdFEvCMfbef358Yd3RFyXaAHNnsq");
+    Parse.serverURL = "https://parseapi.back4app.com/";
+
+    document.getElementById("signupForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const newUsername = document.getElementById("NewUsername").value;
+      const newPassword = document.getElementById("NewPassword").value;
+      const newEmail = document.getElementById("NewEmail").value;
+
+      const user = new Parse.User();
+      user.set("username", newUsername);
+      user.set("password", newPassword);
+      if (newEmail) user.set("email", newEmail);
+
+      try {
+        await user.signUp();
+        alert("Account created successfully! You can now log in.");
+        window.location.href = "login.html"; // redirect back to login
+      } catch (error) {
+        alert("Error: " + error.message);
+      }
+    });
+  </script>
+</body>
+</html>

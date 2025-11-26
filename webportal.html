@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Account & Products</title>
+  <style>
+    .page { display: none; }
+    .active { display: block; }
+  </style>
+</head>
+<body>
+  <!-- Create Account Page -->
+  <div id="createAccountPage" class="page active">
+    <h2>Create Account</h2>
+    <form id="signupForm">
+      <input type="text" id="NewUsername" placeholder="New Username" required><br>
+      <input type="password" id="NewPassword" placeholder="New Password" required><br>
+      <input type="email" id="NewEmail" placeholder="Email (optional)"><br>
+      <button type="submit">Sign Up</button>
+    </form>
+    <p>Already have an account? <a href="#" onclick="showPage('loginPage')">Login here</a></p>
+  </div>
+
+  <!-- Login Page -->
+  <div id="loginPage" class="page">
+    <h2>Login</h2>
+    <form id="loginForm">
+      <input type="text" id="Username" placeholder="Username" required><br>
+      <input type="password" id="Password" placeholder="Password" required><br>
+      <button type="submit">Login</button>
+    </form>
+    <p>Don't have an account? <a href="#" onclick="showPage('createAccountPage')">Create Account</a></p>
+  </div>
+
+  <!-- Products Page -->
+  <div id="productsPage" class="page">
+    <h2>Product List</h2>
+    <ul id="productList"></ul>
+    <p><a href="#" onclick="logout()">Logout</a></p>
+  </div>
+
+  <!-- Parse SDK -->
+  <script src="https://npmcdn.com/parse/dist/parse.min.js"></script>
+  <script>
+    // Initialize Parse once
+    Parse.initialize("xgVTHlZ80J4ujbKSxwfgim5cEt1dhhRxl1hVhz1C", "DPGpsd2qh3cyPRqsKY7Ms8Eo9GypRG8o72quvDgN");
+    Parse.serverURL = "https://parseapi.back4app.com/";
+
+    // Page switching
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(div => div.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+    }
+
+    // Signup
+    document.getElementById("signupForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const newUsername = document.getElementById("NewUsername").value;
+      const newPassword = document.getElementById("NewPassword").value;
+      const newEmail = document.getElementById("NewEmail").value;
+
+      const user = new Parse.User();
+      user.set("username", newUsername);
+      user.set("password", newPassword);
+      if (newEmail) user.set("email", newEmail);
+
+      try {
+        await user.signUp();
+        alert("Account created successfully! You can now log in.");
+        showPage("loginPage");
+      } catch (error) {
+        alert("Error: " + error.message);
+      }
+    });
+
+    // Login
+    document.getElementById("loginForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const username = document.getElementById("Username").value;
+      const password = document.getElementById("Password").value;
+
+      try {
+        const user = await Parse.User.logIn(username, password);
+        alert("Login successful! Welcome " + user.get("username"));
+        showPage("productsPage");
+        showProducts();
+      } catch (error) {
+        alert("Error: " + error.message);
+      }
+    });
+
+    // Show products
+    async function showProducts() {
+      const Product = Parse.Object.extend("_Product");
+      const query = new Parse.Query(Product);
+      const results = await query.find();
+
+      const productList = document.getElementById("productList");
+      productList.innerHTML = "";
+
+      results.forEach(product => {
+        const name = product.get("title"); // adjust to your actual column name
+        const price = product.get("subtitle");       // adjust to your actual column name
+        const li = document.createElement("li");
+        li.textContent = name + " - $" + price;
+        productList.appendChild(li);
+      });
+    }
+
+    // Logout
+    async function logout() {
+      await Parse.User.logOut();
+      alert("You have logged out.");
+      showPage("loginPage");
+    }
+
+    // Auto-check login
+    const currentUser = Parse.User.current();
+    if (currentUser) {
+      showPage("productsPage");
+      showProducts();
+    }
+  </script>
+</body>
+</html>
